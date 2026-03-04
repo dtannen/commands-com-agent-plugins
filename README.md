@@ -6,6 +6,14 @@ This repo currently ships:
 - `openai` provider plugin
 - `gemini` provider plugin
 
+## Getting started
+
+See [`GETTING_STARTED.md`](./GETTING_STARTED.md) for a quick setup guide including:
+- Commands Desktop setup
+- plugin install
+- first-run settings
+- credentials setup
+
 ## Why this repo exists
 
 The packaged desktop app does not yet include a built-in plugin installer UI.
