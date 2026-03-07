@@ -10,7 +10,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 const DEFAULT_BASE_URL = 'https://chatgpt.com/backend-api/codex';
-const DEFAULT_MODEL = 'gpt-5.3-codex';
+const DEFAULT_MODEL = 'gpt-5.4';
 
 /**
  * Check if Codex OAuth token exists at ~/.codex/auth.json.
@@ -51,7 +51,7 @@ export default {
   async listModels(_config) {
     return {
       models: [
-        'gpt-5.3-codex',
+        'gpt-5.4',
       ],
     };
   },

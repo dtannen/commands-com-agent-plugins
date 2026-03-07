@@ -4,7 +4,7 @@
   "type": "module",
   "commands": {
     "providerId": "openai",
-    "defaultModel": "gpt-5.3-codex",
+    "defaultModel": "gpt-5.4",
     "desktopEntry": "desktop.js"
   },
   "dependencies": {

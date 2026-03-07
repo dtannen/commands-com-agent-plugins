@@ -33,7 +33,7 @@ import { validatePathArgsWithinProject } from './path-guard.mjs';
 // ---------------------------------------------------------------------------
 const MAX_SESSIONS = 200;
 // Compact at 90% of context window, matching the Codex CLI strategy.
-// gpt-5.3-codex has a 272k token context window; ~4 chars per token estimate.
+// gpt-5.4 has a 272k token context window; ~4 chars per token estimate.
 const CONTEXT_WINDOW_TOKENS = 272_000;
 const COMPACT_TOKEN_THRESHOLD = Math.floor(CONTEXT_WINDOW_TOKENS * 0.9);  // ~244,800 tokens
 const CHARS_PER_TOKEN = 4;
@@ -680,7 +680,7 @@ function createTools(projectDir, allowedRoots, policy) {
 const openaiProvider = {
   id: 'openai',
   name: 'OpenAI',
-  defaultModel: 'gpt-5.3-codex',
+  defaultModel: 'gpt-5.4',
   capabilities: {
     supportsTools: true,      // The provider supports tool use via its built-in Agents SDK tools
     supportsSessionResume: true,
@@ -694,12 +694,12 @@ const openaiProvider = {
         result: 'Error: No access token found. Set OPENAI_API_KEY, PROVIDER_OPENAI_API_KEY, or run `codex` and sign in (creates ~/.codex/auth.json).',
         turns: 0,
         costUsd: 0,
-        model: input.model || 'gpt-5.3-codex',
+        model: input.model || 'gpt-5.4',
       };
     }
 
     const baseUrl = input.providerConfig?.BASE_URL || 'https://chatgpt.com/backend-api/codex';
-    const model = input.model || 'gpt-5.3-codex';
+    const model = input.model || 'gpt-5.4';
     const projectDir = path.resolve(input.cwd || '.');
 
     // Build the full set of allowed roots from policy (if available)
