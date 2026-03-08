@@ -24,13 +24,26 @@ This repo is the distribution source for provider plugins and install instructio
 1. Clone this repo.
 2. Run the installer script:
 
+**macOS / Linux:**
+
 ```bash
 ./scripts/install-plugins.sh
 ```
 
-This script:
-- installs each plugin's npm dependencies
-- copies plugins to `~/.commands-agent/providers`
+**Windows (or any platform with Node.js):**
+
+```bash
+node scripts/install-plugins.mjs
+```
+
+Both scripts:
+- copy plugins to the platform-appropriate providers directory
+- install each plugin's npm dependencies
+
+| Platform | Default providers directory |
+|----------|---------------------------|
+| macOS / Linux | `~/.commands-agent/providers` |
+| Windows | `%LOCALAPPDATA%\commands-agent\providers` |
 
 3. Open Commands Desktop.
 4. Go to **Settings > Developer**.
@@ -56,6 +69,8 @@ Use either:
 
 ## Manual install (without script)
 
+**macOS / Linux:**
+
 ```bash
 mkdir -p ~/.commands-agent/providers
 
@@ -66,6 +81,21 @@ rsync -a --delete ./plugins/gemini/ ~/.commands-agent/providers/gemini/
 # Install deps in destination
 npm install --prefix ~/.commands-agent/providers/openai --omit=dev
 npm install --prefix ~/.commands-agent/providers/gemini --omit=dev
+```
+
+**Windows (PowerShell):**
+
+```powershell
+$dest = "$env:LOCALAPPDATA\commands-agent\providers"
+New-Item -ItemType Directory -Force -Path "$dest\openai", "$dest\gemini"
+
+# Copy plugins (exclude node_modules)
+robocopy .\plugins\openai "$dest\openai" /MIR /XD node_modules
+robocopy .\plugins\gemini "$dest\gemini" /MIR /XD node_modules
+
+# Install deps in destination
+npm install --prefix "$dest\openai" --omit=dev
+npm install --prefix "$dest\gemini" --omit=dev
 ```
 
 ## CLI/runtime usage (non-desktop)
@@ -88,11 +118,20 @@ COMMANDS_AGENT_PROVIDERS_DIR=/custom/providers/path
 
 ```bash
 git pull
-./scripts/install-plugins.sh
+./scripts/install-plugins.sh        # macOS/Linux
+node scripts/install-plugins.mjs    # Windows (or any platform)
 ```
 
 ## Uninstall
 
+**macOS / Linux:**
+
 ```bash
 rm -rf ~/.commands-agent/providers/openai ~/.commands-agent/providers/gemini
+```
+
+**Windows (PowerShell):**
+
+```powershell
+Remove-Item -Recurse -Force "$env:LOCALAPPDATA\commands-agent\providers\openai", "$env:LOCALAPPDATA\commands-agent\providers\gemini"
 ```

@@ -13,11 +13,22 @@ Install the app, then launch it once.
 ```bash
 git clone https://github.com/dtannen/commands-com-agent-plugins.git
 cd commands-com-agent-plugins
+```
+
+**macOS / Linux:**
+
+```bash
 ./scripts/install-plugins.sh
 ```
 
+**Windows (or any platform with Node.js):**
+
+```bash
+node scripts/install-plugins.mjs
+```
+
 What the script does:
-- Copies plugins into `~/.commands-agent/providers`
+- Copies plugins into the providers directory (`~/.commands-agent/providers` on macOS/Linux, `%LOCALAPPDATA%\commands-agent\providers` on Windows)
 - Installs each plugin's production dependencies
 
 ## 3. Enable external plugins in Desktop
@@ -54,11 +65,20 @@ Use either:
 ```bash
 cd commands-com-agent-plugins
 git pull
-./scripts/install-plugins.sh
+./scripts/install-plugins.sh        # macOS/Linux
+node scripts/install-plugins.mjs    # Windows (or any platform)
 ```
 
 ## 7. Remove plugins
 
+**macOS / Linux:**
+
 ```bash
 rm -rf ~/.commands-agent/providers/openai ~/.commands-agent/providers/gemini
+```
+
+**Windows (PowerShell):**
+
+```powershell
+Remove-Item -Recurse -Force "$env:LOCALAPPDATA\commands-agent\providers\openai", "$env:LOCALAPPDATA\commands-agent\providers\gemini"
 ```
