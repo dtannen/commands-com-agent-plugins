@@ -138,10 +138,10 @@ for (const entry of entries) {
 
   if (installDeps && fs.existsSync(path.join(destPluginPath, 'package.json'))) {
     console.log(`[${pluginName}] npm install --omit=dev`);
-    const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-    execFileSync(npmCmd, ['install', '--omit=dev'], {
+    execFileSync('npm', ['install', '--omit=dev'], {
       cwd: destPluginPath,
       stdio: 'inherit',
+      shell: process.platform === 'win32',
     });
   }
 }
