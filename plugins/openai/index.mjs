@@ -484,29 +484,68 @@ function createTools(projectDir, allowedRoots, policy) {
     }),
     execute: async ({ pattern, glob: globPattern }) => {
       const allResults = [];
-      for (const root of allowedRoots) {
-        try {
-          const result = execFileSync(
-            'grep',
-            ['-rn', `--include=${globPattern}`, pattern, '.'],
-            { cwd: root, encoding: 'utf8', maxBuffer: 1024 * 1024, timeout: 10000 },
-          );
-          if (multiRoot) {
-            // Prefix results with the root directory for clarity
-            const prefixed = result.split('\n')
-              .filter(Boolean)
-              .map(line => `[${root}] ${line}`);
-            allResults.push(...prefixed);
-          } else {
-            allResults.push(...result.split('\n').filter(Boolean));
+
+      if (process.platform === 'win32') {
+        // Pure JS fallback — grep is not available on Windows
+        let re;
+        try { re = new RegExp(pattern); } catch { return `Invalid regex pattern: ${pattern}`; }
+        const globRe = new RegExp(
+          '^' + globPattern.replace(/\./g, '\\.').replace(/\*\*/g, '{{GLOBSTAR}}').replace(/\*/g, '[^/]*').replace(/\?/g, '.').replace(/\{\{GLOBSTAR\}\}/g, '.*') + '$'
+        );
+        function walkDir(dir, root) {
+          let entries;
+          try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
+          for (const entry of entries) {
+            if (entry.name === 'node_modules' || entry.name === '.git') continue;
+            const fullPath = path.join(dir, entry.name);
+            if (entry.isDirectory()) {
+              walkDir(fullPath, root);
+            } else if (globRe.test(entry.name)) {
+              try {
+                const content = fs.readFileSync(fullPath, 'utf8');
+                const lines = content.split('\n');
+                for (let i = 0; i < lines.length; i++) {
+                  if (re.test(lines[i])) {
+                    const relPath = './' + path.relative(root, fullPath).split(path.sep).join('/');
+                    const prefix = multiRoot ? `[${root}] ` : '';
+                    allResults.push(`${prefix}${relPath}:${i + 1}:${lines[i]}`);
+                    if (allResults.length >= 50) return;
+                  }
+                }
+              } catch { /* skip binary or unreadable files */ }
+            }
+            if (allResults.length >= 50) return;
           }
-        } catch (err) {
-          if (err.status !== 1) {
-            allResults.push(`[${root}] Search error: ${err.message}`);
+        }
+        for (const root of allowedRoots) {
+          walkDir(root, root);
+          if (allResults.length >= 50) break;
+        }
+      } else {
+        for (const root of allowedRoots) {
+          try {
+            const result = execFileSync(
+              'grep',
+              ['-rn', `--include=${globPattern}`, pattern, '.'],
+              { cwd: root, encoding: 'utf8', maxBuffer: 1024 * 1024, timeout: 10000 },
+            );
+            if (multiRoot) {
+              const prefixed = result.split('\n')
+                .filter(Boolean)
+                .map(line => `[${root}] ${line}`);
+              allResults.push(...prefixed);
+            } else {
+              allResults.push(...result.split('\n').filter(Boolean));
+            }
+          } catch (err) {
+            if (err.status !== 1) {
+              allResults.push(`[${root}] Search error: ${err.message}`);
+            }
+            // status 1 = no matches, skip silently
           }
-          // status 1 = no matches, skip silently
         }
       }
+
       if (allResults.length === 0) return 'No matches found.';
       const lines = allResults.slice(0, 50);
       return lines.join('\n') + (allResults.length > 50 ? '\n... (truncated)' : '');
