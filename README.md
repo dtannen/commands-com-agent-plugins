@@ -1,28 +1,46 @@
+<div align="center">
+
 # Commands.com Agent Plugins
 
-Standalone provider plugin repository for Commands.com Desktop/Agent.
+**Production provider plugins for Commands Desktop. OpenAI and Gemini out of the box.**
 
-This repo currently ships:
-- `openai` provider plugin
-- `gemini` provider plugin
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933.svg)](https://nodejs.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
+[![Providers](https://img.shields.io/badge/Providers-OpenAI%20%7C%20Gemini-blue.svg)](#included-plugins)
 
-## Getting started
+Distribution repo for provider plugins that connect Commands Desktop agents
+to external LLM APIs. Ships ready-to-install plugins with scripted setup.
 
-See [`GETTING_STARTED.md`](./GETTING_STARTED.md) for a quick setup guide including:
-- Commands Desktop setup
-- plugin install
-- first-run settings
-- credentials setup
+```
+Commands Desktop  ──>  Provider Plugin  ──>  OpenAI / Gemini API
+```
 
-## Why this repo exists
+</div>
 
-The packaged desktop app does not yet include a built-in plugin installer UI.
-This repo is the distribution source for provider plugins and install instructions.
+---
 
-## Quick install (packaged desktop app)
+## Highlights
 
-1. Clone this repo.
-2. Run the installer script:
+| | |
+|---|---|
+| **Two providers** | OpenAI (`@openai/agents` SDK) and Gemini (CodeAssist API) ready to use |
+| **Cross-platform** | Bash installer for macOS/Linux, Node.js installer for Windows |
+| **Flexible auth** | API key via Desktop profile, or Codex / Gemini CLI OAuth tokens |
+| **MCP support** | OpenAI plugin supports stdio, HTTP, and SSE MCP servers |
+| **Streaming** | Real-time streaming responses with reasoning and thought support |
+| **Session management** | Multi-turn context with compaction and session persistence |
+
+## Requirements
+
+- Node.js 18+
+- Commands Desktop (DMG or dev build)
+
+## Quick Start
+
+```bash
+git clone https://github.com/Commands-com/agent-plugins-production.git
+cd agent-plugins-production
+```
 
 **macOS / Linux:**
 
@@ -36,69 +54,37 @@ This repo is the distribution source for provider plugins and install instructio
 node scripts/install-plugins.mjs
 ```
 
-Both scripts:
-- copy plugins to the platform-appropriate providers directory
-- install each plugin's npm dependencies
+Both scripts copy plugins and install npm dependencies.
 
 | Platform | Default providers directory |
-|----------|---------------------------|
+|---|---|
 | macOS / Linux | `~/.commands-agent/providers` |
 | Windows | `%LOCALAPPDATA%\commands-agent\providers` |
 
-3. Open Commands Desktop.
-4. Go to **Settings > Developer**.
-5. Enable:
-- `Dev Mode`
-- `Trust All Plugins`
-6. Restart the app.
-7. Create or edit an agent profile and select provider `openai` or `gemini`.
+Then in Commands Desktop:
 
-## Credentials
+1. Go to **Settings > Developer**.
+2. Enable **Dev Mode** and **Trust All Plugins**.
+3. Restart the app.
+4. Create or edit an agent profile and select provider `openai` or `gemini`.
 
-### OpenAI plugin
+## Included Plugins
 
-Use either:
-- Desktop profile `apiKey` field (stored as provider config), or
-- Codex OAuth token at `~/.codex/auth.json` (run `codex` and sign in)
+### OpenAI
 
-### Gemini plugin
+- **Default model**: `gpt-5.4`
+- **SDK**: `@openai/agents`
+- **Auth**: Desktop profile `apiKey` field, or Codex OAuth token at `~/.codex/auth.json`
+- **Features**: file-system tools, MCP server support, session compaction
 
-Use either:
-- Desktop profile `apiKey` field, or
-- Gemini OAuth creds at `~/.gemini/oauth_creds.json` (run `gemini` and sign in)
+### Gemini
 
-## Manual install (without script)
+- **Default model**: `gemini-3.1-pro-preview`
+- **Available models**: `gemini-3.1-pro-preview`, `gemini-2.5-flash`, `gemini-2.0-flash`
+- **Auth**: Desktop profile `apiKey` field, or Gemini OAuth creds at `~/.gemini/oauth_creds.json`
+- **Features**: model fallback, retry with exponential backoff, thought signature injection
 
-**macOS / Linux:**
-
-```bash
-mkdir -p ~/.commands-agent/providers
-
-# Copy plugins
-rsync -a --delete ./plugins/openai/ ~/.commands-agent/providers/openai/
-rsync -a --delete ./plugins/gemini/ ~/.commands-agent/providers/gemini/
-
-# Install deps in destination
-npm install --prefix ~/.commands-agent/providers/openai --omit=dev
-npm install --prefix ~/.commands-agent/providers/gemini --omit=dev
-```
-
-**Windows (PowerShell):**
-
-```powershell
-$dest = "$env:LOCALAPPDATA\commands-agent\providers"
-New-Item -ItemType Directory -Force -Path "$dest\openai", "$dest\gemini"
-
-# Copy plugins (exclude node_modules)
-robocopy .\plugins\openai "$dest\openai" /MIR /XD node_modules
-robocopy .\plugins\gemini "$dest\gemini" /MIR /XD node_modules
-
-# Install deps in destination
-npm install --prefix "$dest\openai" --omit=dev
-npm install --prefix "$dest\gemini" --omit=dev
-```
-
-## CLI/runtime usage (non-desktop)
+## CLI / Runtime Usage
 
 External providers are only loaded when plugin verification is explicitly enabled.
 
@@ -114,7 +100,40 @@ Optional custom plugin path:
 COMMANDS_AGENT_PROVIDERS_DIR=/custom/providers/path
 ```
 
-## Updating plugins
+## Manual Install
+
+<details>
+<summary><strong>macOS / Linux</strong></summary>
+
+```bash
+mkdir -p ~/.commands-agent/providers
+
+rsync -a --delete ./plugins/openai/ ~/.commands-agent/providers/openai/
+rsync -a --delete ./plugins/gemini/ ~/.commands-agent/providers/gemini/
+
+npm install --prefix ~/.commands-agent/providers/openai --omit=dev
+npm install --prefix ~/.commands-agent/providers/gemini --omit=dev
+```
+
+</details>
+
+<details>
+<summary><strong>Windows (PowerShell)</strong></summary>
+
+```powershell
+$dest = "$env:LOCALAPPDATA\commands-agent\providers"
+New-Item -ItemType Directory -Force -Path "$dest\openai", "$dest\gemini"
+
+robocopy .\plugins\openai "$dest\openai" /MIR /XD node_modules
+robocopy .\plugins\gemini "$dest\gemini" /MIR /XD node_modules
+
+npm install --prefix "$dest\openai" --omit=dev
+npm install --prefix "$dest\gemini" --omit=dev
+```
+
+</details>
+
+## Updating
 
 ```bash
 git pull
@@ -124,14 +143,34 @@ node scripts/install-plugins.mjs    # Windows (or any platform)
 
 ## Uninstall
 
-**macOS / Linux:**
+<details>
+<summary><strong>macOS / Linux</strong></summary>
 
 ```bash
 rm -rf ~/.commands-agent/providers/openai ~/.commands-agent/providers/gemini
 ```
 
-**Windows (PowerShell):**
+</details>
+
+<details>
+<summary><strong>Windows (PowerShell)</strong></summary>
 
 ```powershell
 Remove-Item -Recurse -Force "$env:LOCALAPPDATA\commands-agent\providers\openai", "$env:LOCALAPPDATA\commands-agent\providers\gemini"
 ```
+
+</details>
+
+## Project Layout
+
+```
+plugins/openai          OpenAI provider (index.mjs, desktop.js)
+plugins/gemini          Gemini provider (index.mjs, desktop.js)
+scripts/install-plugins.sh    Bash installer (macOS/Linux)
+scripts/install-plugins.mjs   Node.js installer (cross-platform)
+GETTING_STARTED.md      Step-by-step setup guide
+```
+
+## Additional Docs
+
+- [Getting Started](./GETTING_STARTED.md)
